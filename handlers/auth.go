@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -11,37 +13,39 @@ import (
 )
 
 func Login(c *gin.Context) {
-
-	var body models.UserRequest
+	var body models.UserLoginRequest
 	if c.Bind(&body) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to read body"})
 		return
 	}
 
-	user, err := entities.FindUserByName(body.Name)
+	user, err := entities.FindUserByEmail(body.Email)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Name"})
-		return
-	}
-	if user.Name != body.Name {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Name"})
+		log.Println("error", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Email"})
 		return
 	}
 
-	password := user.VerifyPassword(body.Password)
-	if password != nil {
+	if !user.IsActive {
+		log.Println("error", "User Error")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User is not active"})
+		return
+	}
+
+	if user.VerifyPassword(body.Password) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Password"})
 		return
 	}
 
 	jwt, err := helper.GenerateJwt(user)
-
 	if err != nil {
+		log.Println("error", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to Create Token"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"token": jwt})
 
+	c.JSON(http.StatusOK, gin.H{"token": jwt})
+	fmt.Println("Successfully loged in")
 }
 
 func Logout(c *gin.Context) {

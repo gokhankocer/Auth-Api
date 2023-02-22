@@ -4,7 +4,6 @@ import (
 	"log"
 
 	"github.com/gokhankocer/User-Api/database"
-	"github.com/gokhankocer/User-Api/entities"
 	"github.com/gokhankocer/User-Api/routers"
 	"github.com/joho/godotenv"
 )
@@ -17,7 +16,9 @@ func main() {
 func loadDatabase() {
 	database.Connect()
 	database.ConnectRedis()
-	database.DB.Migrator().CreateTable(&entities.User{})
+	//database.DB.Migrator().DropTable(&entities.User{})
+	//database.DB.Migrator().CreateTable(&entities.User{})
+	//database.DB.Migrator().AddColumn(&entities.User{}, "Is_Active")
 }
 
 func loadEnv() {

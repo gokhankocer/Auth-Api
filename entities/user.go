@@ -10,6 +10,7 @@ type User struct {
 	gorm.Model
 	Name     string `json:"name"`
 	Email    string `json:"email" gorm:"unique"`
+	IsActive bool   `json:"is_active"`
 	Password string `json:"password"`
 }
 
@@ -29,9 +30,9 @@ func (user *User) VerifyPassword(providedPassword string) error {
 	}
 	return nil
 }
-func FindUserByName(name string) (User, error) {
+func FindUserByEmail(email string) (User, error) {
 	var user User
-	err := database.DB.Where("name=?", name).Find(&user).Error
+	err := database.DB.Where("email=?", email).Find(&user).Error
 	if err != nil {
 		return User{}, err
 	}
